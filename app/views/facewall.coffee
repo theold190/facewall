@@ -70,16 +70,31 @@ class FaceWallView extends View
             employee_img = new Image()
 
             employee_img.onload = ->
-                employee_loaded()
                 goodBucket.push employee
+                employee_loaded()
 
             employee_img.onerror = ->
-                employee_loaded()
                 badBucket.push employee
+                employee_loaded()
 
             employee_img.src = view.avatarInGridSize(employee.gravatar)
 
         employees_loaded = 0
+
+        writeEmployeeRow = (row_bucket, row_count) =>
+            $row = $ """
+                <div class="employee-row"></div>
+            """
+            $fw.append $row
+
+            _.each row_bucket, (employee_in_row, index) ->
+                width = grid[index]
+
+                setTimeout ->
+                    $('#loader').hide() is index is 0
+                    $row.append $employee(employee_in_row, grid[0], width)
+
+                , (((row_count * grid.length) + index) * 30)
 
         employee_loaded = =>
             employees_loaded += 1
@@ -95,26 +110,14 @@ class FaceWallView extends View
 
                 _.each goodBucket, (employee) ->
                     if row_bucket.length is grid.length
-
-                        $row = $ """
-                            <div class="employee-row"></div>
-                        """
-                        $fw.append $row
-
-                        _.each row_bucket, (employee_in_row, index) ->
-
-                            width = grid[index]
-
-                            setTimeout ->
-                                $('#loader').hide() is index is 0
-                                $row.append $employee(employee_in_row, grid[0], width)
-
-                            , (((row_count * grid.length) + index) * 30)
-
+                        writeEmployeeRow row_bucket, row_count
                         row_bucket = []
                         row_count += 1
 
                     row_bucket.push employee
+
+                if row_bucket.length > 0
+                    writeEmployeeRow row_bucket, row_count
 
                 return
 
