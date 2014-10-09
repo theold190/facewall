@@ -333,7 +333,7 @@ class FaceWallView extends View
         remainder = options.width % currentBestWidth
         return ((currentBestWidth + (if num is currentBestNumColumns then remainder else 0)) for num in [1..currentBestNumColumns])
 
-    getGrid: (columnWidth, attempts) ->
+    getGrid: (columnWidth) ->
         options =
             width: $(window).width()
             minColumns: 5
@@ -341,17 +341,8 @@ class FaceWallView extends View
             minWidth: parseInt(columnWidth * 0.7, 10)
             maxWidth: parseInt(columnWidth * 1.3, 10)
 
-        attempts = attempts or 0
         grid = @getOptimumGridColumnWidths options
-
-        return grid if attempts > 20
-
-        if grid.length is 1
-            options.width -= 1
-            @getGrid options, attempts + 1
-
-        else
-            grid
+        return grid
 
     setThreeDee: =>
         $(@el).find('.facewall')["#{if @threedee then 'add' else 'remove'}Class"]('facewall-threedee')
