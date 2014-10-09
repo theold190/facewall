@@ -105,7 +105,7 @@ class FaceWallView extends View
 
                 if @useAutoSizingNextTime and goodBucket.length > 0
                     @useAutoSizingNextTime = false
-                    @columnWidth = (Math.sqrt(($(window).width() * $(window).height())  / goodBucket.length)) * (1 / 0.7)
+                    @columnWidth = @getOptimumGridColumnWidth @getOptions(), goodBucket.length
                     view.render()
 
                 _.each goodBucket, (employee) ->
@@ -319,30 +319,46 @@ class FaceWallView extends View
             search = _.map(@search.split(' '), (w) -> _.map(w.split("'"), (p) -> _.capitalize(p)).join("'")).join('&nbsp;')
             $search.addClass('facewall-flyin').addClass('facewall-search-opened').html search
 
-    # Imported from sexy grid plugin from https://git.hubteam.com/HubSpot/style_guide/blob/master/static/js/components/sexy-grid-helpers.coffee
-    getOptimumGridColumnWidths: (options) ->
-        currentBestWidth = options.width
-        currentBestNumColumns = 1
+    printLine = (line, text) -> console.log line + " " + text
 
-        for numColumns in [options.minColumns...options.maxColumns]
-            candidateWidth = parseInt(options.width / numColumns, 10)
-            if options.minWidth < candidateWidth < options.maxWidth
-                currentBestWidth = candidateWidth
-                currentBestNumColumns = numColumns
-
-        remainder = options.width % currentBestWidth
-        return ((currentBestWidth + (if num is currentBestNumColumns then remainder else 0)) for num in [1..currentBestNumColumns])
-
-    getGrid: (columnWidth) ->
+    getOptions: () ->
         options =
             width: $(window).width()
-            minColumns: 5
+            height: $(window).height()
+            minColumns: 3
             maxColumns: 100
-            minWidth: parseInt(columnWidth * 0.7, 10)
-            maxWidth: parseInt(columnWidth * 1.3, 10)
+        return options
 
-        grid = @getOptimumGridColumnWidths options
-        return grid
+    getOptimumGridColumnWidth: (options, numPictures) ->
+        currentBestSide = 0
+
+        if numPictures < 2
+            return options.width
+
+        #Find a rows/columns combination that would give biggest images size
+        for numColumns in [options.minColumns...options.maxColumns]
+            numLastRow = numPictures % numColumns
+            numRows = parseInt(numPictures / numColumns, 10)
+            if numLastRow > 0
+                numRows += 1
+
+            candidateWidth = parseInt(options.width / numColumns, 10)
+            candidateHeight = parseInt(options.height / numRows, 10)
+
+            # Making sure all pictures will fit
+            candidateSide = Math.min(candidateWidth, candidateHeight)
+            if candidateSide > currentBestSide
+                currentBestSide = candidateSide
+
+        return currentBestSide
+
+    getGrid: (columnWidth) ->
+        width = $(window).width()
+        if columnWidth is 0
+            columnWidth = width
+
+        numColumns = parseInt(width / columnWidth, 10)
+        return (columnWidth for num in [1..numColumns])
 
     setThreeDee: =>
         $(@el).find('.facewall')["#{if @threedee then 'add' else 'remove'}Class"]('facewall-threedee')
