@@ -55,7 +55,7 @@ class FaceWallGameView extends View
             employee_img.onerror = ->
                 employee_loaded()
 
-            employee_img.src = "#{employee.gravatar}&s=160"
+            employee_img.src = view.getImageUrl employee,160
 
         gameStarted = false
 
@@ -70,7 +70,7 @@ class FaceWallGameView extends View
     $employee: (employee, size, randex) -> """
         <a data-email="#{employee.email}" data-randex="#{randex}" class="employee facewall-fadein" style="top: #{randex * size}px">
             <span class="name">#{employee.firstName} #{employee.lastName}</span>
-            <img class="photo" src="#{employee.gravatar}&s=#{size}" />
+            <img class="photo" src="#{@getImageUrl(employee,size)}" />
         </a>
     """
 
@@ -133,7 +133,7 @@ class FaceWallGameView extends View
             $('.logged-in-employee').html """
                 <a data-email="#{employee.email}" class="employee facewall-fadein">
                     <span class="name">#{employee.firstName} #{employee.lastName}</span>
-                    <img class="photo" src="#{employee.gravatar}&s=160" />
+                    <img class="photo" src="#{@getImageUrl(employee,160)}" />
                 </a>
             """
 
@@ -201,7 +201,7 @@ class FaceWallGameView extends View
             $current.removeClass('guessed-correctly').html @$employee currentEmployee, currentSize, 0
             $current.find('.name').remove()
             removeAndRender()
-        currentImageLoader.src = "#{currentEmployee.gravatar}&s=#{currentSize}"
+        currentImageLoader.src = "#{@getImageUrl(currentEmployee,currentSize)}"
 
         removeAndRender = -> remove render
 
@@ -220,7 +220,7 @@ class FaceWallGameView extends View
             _.each employeeGuesses, (employee, index) ->
                 setTimeout ->
                     $employee = $(view.$employee employee, 40, index)
-                    $employee.find('.name').html """<span class="first-name">#{employee.firstName}&nbsp;</span><span class="last-name">#{employee.lastName}</span>"""
+                    $employee.find('.name').html """<span class="first-name">#{employee.firstName}</span><span class="last-name">#{employee.lastName}</span>"""
                     $guesses.prepend $employee
                 , index * 50
 
@@ -261,5 +261,11 @@ class FaceWallGameView extends View
                     height: $(window).height() - $(window).width()
 
         $(window).resize()
+
+    getImageUrl: (employee, size) =>
+        if employee.thumbnail?
+            return "#{employee.thumbnail}"
+        else
+            return "#{employee.gravatar}&s=#{size}"
 
 module.exports = FaceWallGameView

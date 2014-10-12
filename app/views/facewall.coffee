@@ -55,7 +55,7 @@ class FaceWallView extends View
         $employee = (employee, height, width) -> """
             <a data-email="#{employee.email}" class="employee facewall-flyin" style="width: #{width}px; height: #{height}px;">
                 <span class="name">#{employee.firstName.substr(0, 1) + employee.lastName.substr(0, 1)}</span>
-                <img class="photo" src="#{view.avatarInGridSize(employee.gravatar)}" />
+                <img class="photo" src="#{view.getThumbnailUrl(employee)}" />
             </a>
         """
 
@@ -77,7 +77,7 @@ class FaceWallView extends View
                 badBucket.push employee
                 employee_loaded()
 
-            employee_img.src = view.avatarInGridSize(employee.gravatar)
+            employee_img.src = view.getThumbnailUrl(employee)
 
         employees_loaded = 0
 
@@ -173,7 +173,6 @@ class FaceWallView extends View
 
         @flyToFeatured() if @threedee
 
-        image_size = 600
         employee_img = new Image()
         view.zindex += 3
         employee_img.onload = ->
@@ -183,13 +182,13 @@ class FaceWallView extends View
                 <a data-email="#{employee.email}" class="employee featured featured-employee facewall-featureEmployee-and-flipInY" style="z-index: #{view.zindex}">
                     <span class="name">#{employee.firstName}</span>
                     <span class="role">#{employee.role}</span>
-                    <img class="photo" src="#{employee.gravatar}&s=#{image_size}" />
+                    <img class="photo" src="#{view.getFullImageUrl(employee)}"" />
                 </a>
             """
         employee_img.onerror = ->
             view.unfeatureEmployee()
 
-        employee_img.src = "#{employee.gravatar}&s=#{image_size}"
+        employee_img.src = "#{view.getFullImageUrl(employee)}"
 
     unfeatureEmployee: =>
         $fw = $(@el).find('.facewall')
@@ -390,7 +389,16 @@ class FaceWallView extends View
             </style>
         """
 
-    avatarInGridSize: (url) =>
-        "#{url}&s=#{@grid[0]}&_=#{@cache_bust_image_counter}"
+    getThumbnailUrl: (employee) =>
+        if employee.thumbnail?
+            return "#{employee.thumbnail}"
+        else
+            return "#{employee.gravatar}&s=#{@grid[0]}&_=#{@cache_bust_image_counter}"
+
+    getFullImageUrl: (employee) =>
+        if employee.fullImage?
+            return "#{employee.fullImage}"
+        else
+            return "#{employee.gravatar}&s=600"
 
 module.exports = FaceWallView
